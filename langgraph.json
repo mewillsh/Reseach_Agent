@@ -1,0 +1,9 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "create_analysts": "./src/research_agent/creating_analysts.py:graph",
+    "question_answer": "./src/research_agent/answering_questions.py:question_answer_graph"
+
+  },
+  "env": ".env"
+}
