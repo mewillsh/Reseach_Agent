@@ -1,4 +1,4 @@
-from research_agent.utils.states import GenerateAnalystsState , InterviewState 
+from research_agent.utils.states import GenerateAnalystsState , InterviewState , ResearchGraphState
 from langgraph.graph import END
 from dotenv import load_dotenv
 from typing import Literal
@@ -42,3 +42,32 @@ def route_messages(state: InterviewState, name: str = "expert"):
     if "Thank you so much for your help" in last_question.content:
         return 'save_interview'
     return "ask_question"
+
+from langgraph.types import Send
+from langchain_core.messages import HumanMessage
+
+
+def initiate_all_interviews(state: ResearchGraphState) -> str | list[Send]:
+    """Conditional edge 'map' step to run each interview sub-graph using the Send API."""
+    # Check if there is human feedback
+    human_analyst_feedback = state.get("human_analyst_feedback")
+    if human_analyst_feedback:
+        # Return to create_analysts to regenerate/refine personas
+        return "create_analysts"
+
+    # Otherwise, kick off interviews in parallel via Send() API
+    topic = state["topic"]
+    return [
+        Send(
+            "conduct_interview",
+            {
+                "analyst": analyst,
+                "messages": [
+                    HumanMessage(
+                        content=f"So you said you were writing an article on {topic}?"
+                    )
+                ],
+            },
+        )
+        for analyst in state["analysts"]
+    ]
